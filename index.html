@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive ASCII / ISO-8859-1 Table</title>
+    
+    <style>
+		@import "style.css";
+	</style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Interactive ISO 8859-1 Table</h1>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="e.g., A, 65, NUL, copyright, or '€' for exact...">
+            </div>
+        </header>
+
+        <main id="ascii-table">
+            <!-- Character cards will be generated here by JavaScript -->
+        </main>
+
+        <footer>
+            <p>Interactive lookup for the 8-bit <a href="https://en.wikipedia.org/wiki/ISO/IEC_8859-1" target="_blank" rel="noopener noreferrer">ISO/IEC 8859-1</a> character set.</p>
+        </footer>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const table = document.getElementById('ascii-table');
+        const searchInput = document.getElementById('search-input');
+
+        // Data for special characters, including short names
+        const controlCodeShortNames = {
+             0: "NUL",  1: "SOH",  2: "STX",  3: "ETX",  4: "EOT",  5: "ENQ",  6: "ACK",  7: "BEL",
+             8: "BS",   9: "HT",  10: "LF",  11: "VT",  12: "FF",  13: "CR",  14: "SO",  15: "SI",
+            16: "DLE", 17: "DC1", 18: "DC2", 19: "DC3", 20: "DC4", 21: "NAK", 22: "SYN", 23: "ETB",
+            24: "CAN", 25: "EM",  26: "SUB", 27: "ESC", 28: "FS",  29: "GS",  30: "RS",  31: "US",
+            127: "DEL"
+        };
+
+        const specialCharNames = {
+            0: 'Null', 1: 'Start of Heading', 2: 'Start of Text', 3: 'End of Text', 4: 'End of Transmission',
+            5: 'Enquiry', 6: 'Acknowledge', 7: 'Bell', 8: 'Backspace', 9: 'Horizontal Tab',
+            10: 'Line Feed', 11: 'Vertical Tab', 12: 'Form Feed', 13: 'Carriage Return', 14: 'Shift Out',
+            15: 'Shift In', 16: 'Data Link Escape', 17: 'Device Control 1', 18: 'Device Control 2',
+            19: 'Device Control 3', 20: 'Device Control 4', 21: 'Negative Acknowledge', 22: 'Synchronous Idle',
+            23: 'End of Transmission Block', 24: 'Cancel', 25: 'End of Medium', 26: 'Substitute',
+            27: 'Escape', 28: 'File Separator', 29: 'Group Separator', 30: 'Record Separator',
+            31: 'Unit Separator', 32: 'Space', 127: 'Delete',
+            128: 'Padding Character', 129: 'High Octet Preset', 130: 'Break Permitted Here', 131: 'No Break Here',
+            132: 'Index', 133: 'Next Line', 134: 'Start of Selected Area', 135: 'End of Selected Area',
+            136: 'Character Tabulation Set', 137: 'Character Tabulation with Justification',
+            138: 'Line Tabulation Set', 139: 'Partial Line Forward', 140: 'Partial Line Backward',
+            141: 'Set Transmit State', 142: 'Cancel Character', 143: 'Message Waiting', 144: 'Start of Guarded Area',
+            145: 'End of Guarded Area', 146: 'Start of String', 147: 'Private Message', 148: 'Single Character Introducer',
+            149: 'Device Control String', 150: 'Private Use 1', 151: 'Private Use 2',
+            152: 'Set Programmed Text', 153: 'Set Graphics Rendition', 154: 'Device Status Report',
+            155: 'SOS/PM/APC', 156: 'Start of String', 157: 'End of String', 158: 'Cancel',
+            159: 'Private Use', 160: 'No-Break Space', 161: 'Inverted Exclamation Mark',
+            162: 'Cent Sign', 163: 'Pound Sign', 164: 'Currency Sign', 165: 'Yen Sign',
+            166: 'Broken Bar', 167: 'Section Sign', 168: 'Diaeresis', 169: 'Copyright Sign',
+            170: 'Feminine Ordinal Indicator', 171: 'Left-Pointing Guillemet', 172: 'Not Sign',
+            173: 'Soft Hyphen', 174: 'Registered Sign', 175: 'Macron', 176: 'Degree Sign',
+            177: 'Plus-Minus Sign', 178: 'Superscript Two', 179: 'Superscript Three', 180: 'Acute Accent',
+            181: 'Micro Sign', 182: 'Pilcrow Sign', 183: 'Middle Dot', 184: 'Cedilla',
+            185: 'Superscript One', 186: 'Masculine Ordinal Indicator', 187: 'Right-Pointing Guillemet',
+            188: 'Vulgar Fraction One Quarter', 189: 'Vulgar Fraction One Half', 190: 'Vulgar Fraction Three Quarters',
+            191: 'Inverted Question Mark', 192: 'Capital A with grave', 193: 'Capital A with acute',
+            194: 'Capital A with circumflex', 195: 'Capital A with tilde', 196: 'Capital A with diaeresis',
+            197: 'Capital A with ring above', 198: 'Capital AE', 199: 'Capital C with cedilla',
+            200: 'Capital E with grave', 201: 'Capital E with acute', 202: 'Capital E with circumflex',
+            203: 'Capital E with diaeresis', 204: 'Capital I with grave', 205: 'Capital I with acute',
+            206: 'Capital I with circumflex', 207: 'Capital I with diaeresis', 208: 'Capital Eth',
+            209: 'Capital N with tilde', 210: 'Capital O with grave', 211: 'Capital O with acute',
+            212: 'Capital O with circumflex', 213: 'Capital O with tilde', 214: 'Capital O with diaeresis',
+            215: 'Multiplication Sign', 216: 'Capital O with stroke', 217: 'Capital U with grave',
+            218: 'Capital U with acute', 219: 'Capital U with circumflex', 220: 'Capital U with diaeresis',
+            221: 'Capital Y with acute', 222: 'Capital Thorn', 223: 'Sharp S',
+            224: 'Small a with grave', 225: 'Small a with acute', 226: 'Small a with circumflex',
+            227: 'Small a with tilde', 228: 'Small a with diaeresis', 229: 'Small a with ring above',
+            230: 'Small ae', 231: 'Small c with cedilla', 232: 'Small e with grave',
+            233: 'Small e with acute', 234: 'Small e with circumflex', 235: 'Small e with diaeresis',
+            236: 'Small i with grave', 237: 'Small i with acute', 238: 'Small i with circumflex',
+            239: 'Small i with diaeresis', 240: 'Small eth', 241: 'Small n with tilde',
+            242: 'Small o with grave', 243: 'Small o with acute', 244: 'Small o with circumflex',
+            245: 'Small o with tilde', 246: 'Small o with diaeresis', 247: 'Division Sign',
+            248: 'Small o with stroke', 249: 'Small u with grave', 250: 'Small u with acute',
+            251: 'Small u with circumflex', 252: 'Small u with diaeresis', 253: 'Small y with acute',
+            254: 'Small thorn', 255: 'Small y with diaeresis',
+        };
+
+        // Generate all 256 character cards
+        let cardsHTML = '';
+        for (let i = 0; i < 256; i++) {
+            const char = String.fromCharCode(i);
+            const dec = i;
+            const hex = i.toString(16).toUpperCase().padStart(2, '0');
+            const bin = i.toString(2).padStart(8, '0');
+            const name = specialCharNames[i] || `Character ${i}`;
+            const shortName = controlCodeShortNames[i] || '';
+
+            const isControl = (i >= 0 && i <= 31) || (i >= 127 && i <= 159);
+            
+            // Build the character display area
+            let charDisplay;
+            if (isControl && shortName) {
+                charDisplay = `<div class="char-display control-char">${shortName}</div>`;
+            } else if (isControl) {
+                charDisplay = `<div class="char-display control-char" style="font-size: 1.5rem;">${name.replace(/ /g, '<br>')}</div>`;
+            } else {
+                charDisplay = `<div class="char-display">${char}</div>`;
+            }
+
+            cardsHTML += `
+                <div class="char-card" 
+                     data-dec="${dec}" 
+                     data-hex="${hex}" 
+                     data-bin="${bin}" 
+                     data-char="${char}" 
+                     data-name="${name.toLowerCase()}"
+                     data-shortname="${shortName.toLowerCase()}">
+                    
+                    <button class="copy-btn" data-char-to-copy="${char}" title="Copy character">
+                        <svg class="icon-copy" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                        <svg class="icon-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </button>
+                    
+                    ${charDisplay}
+                    <div class="char-info">
+                        <div><span class="label">Dec:</span> <code>${dec}</code></div>
+                        <div><span class="label">Hex:</span> <code>${hex}</code></div>
+                        <div><span class="label">Bin:</span> <code>${bin}</code></div>
+                    </div>
+                    <div class="char-name">${name}</div>
+                </div>
+            `;
+        }
+        table.innerHTML = cardsHTML;
+
+        // --- Search and Filter Logic ---
+        const cards = document.querySelectorAll('.char-card');
+
+        function filterCards() {
+            const query = searchInput.value;
+            const lowerCaseQuery = query.toLowerCase().trim();
+
+            if (query.trim() === "") {
+                cards.forEach(card => card.classList.remove('hidden', 'highlight'));
+                return;
+            }
+            
+            // --- New: Specific character search with quotes ---
+            if (query.length > 1 && ((query.startsWith("'") && query.endsWith("'")) || (query.startsWith('"') && query.endsWith('"')))) {
+                const exactChar = query.slice(1, -1);
+                cards.forEach(card => {
+                    const isMatch = card.dataset.char === exactChar;
+                    card.classList.toggle('hidden', !isMatch);
+                    card.classList.toggle('highlight', isMatch);
+                });
+            } else {
+            // --- Original broad search ---
+                const hexQuery = lowerCaseQuery.startsWith('0x') ? lowerCaseQuery.substring(2) : lowerCaseQuery;
+                cards.forEach(card => {
+                    const { dec, hex, bin, char, name, shortname } = card.dataset;
+
+                    const isMatch = dec.includes(lowerCaseQuery) ||
+                                    hex.toLowerCase().includes(hexQuery) ||
+                                    bin.includes(lowerCaseQuery) ||
+                                    name.includes(lowerCaseQuery) ||
+                                    shortname.includes(lowerCaseQuery) ||
+                                    (lowerCaseQuery.length === 1 && char.toLowerCase() === lowerCaseQuery);
+                    
+                    card.classList.toggle('hidden', !isMatch);
+                    card.classList.toggle('highlight', isMatch);
+                });
+            }
+        }
+        
+        // --- Copy to Clipboard Logic (with Event Delegation) ---
+        table.addEventListener('click', (event) => {
+            const copyButton = event.target.closest('.copy-btn');
+            if (!copyButton) return;
+
+            const charToCopy = copyButton.dataset.charToCopy;
+            
+            navigator.clipboard.writeText(charToCopy).then(() => {
+                copyButton.classList.add('copied');
+                setTimeout(() => {
+                    copyButton.classList.remove('copied');
+                }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy character: ', err);
+                // Optionally provide an error message to the user
+            });
+        });
+        
+        searchInput.addEventListener('input', filterCards);
+    });
+    </script>
+
+</body>
+</html>
